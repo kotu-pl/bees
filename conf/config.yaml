@@ -1,0 +1,10 @@
+defaults:
+  - data: bees_initial
+  - network: transfer_resnet
+  - trainer: trainer
+  - logger: tensorboard
+  - callbacks:
+    - model_checkpoint
+    - early_stopping
+
+resnet_version: 18

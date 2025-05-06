@@ -1,0 +1,8 @@
+name: transfer_resnet
+_target_: classification.lightning_modules.transfer_resnet.TransferResNetLitModel
+
+model: 
+  _target_: torchvision.models.resnet${resnet_version}
+  pretrained: True
+learning_rate: 1e-3
+num_classes: 5

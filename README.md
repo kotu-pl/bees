@@ -1,2 +1,2 @@
 # bees
-GSN 2025 - projekt dymplomowy
+GSN 2025 - projekt dyplomowy

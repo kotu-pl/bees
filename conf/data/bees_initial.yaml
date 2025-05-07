@@ -1,3 +1,5 @@
 _target_: classification.lightning_data_modules.bees_initial.BeesDataModule
 batch_size: 16
-data_dir: '/content/bees_lighting/dataset'
+data_dir: '/content/bees_dataset'
+zip_dir: '/content/bees_dataset'
+zip_path: '/content/bees_dataset_300.zip'

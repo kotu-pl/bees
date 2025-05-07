@@ -17,7 +17,7 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
     
-@hydra.main(config_path="conf", config_name="config")
+@hydra.main(version_base="1.3", config_path="conf", config_name="config")
 def main(cfg: DictConfig):
     # debugowanie
     # print(OmegaConf.to_yaml(cfg))

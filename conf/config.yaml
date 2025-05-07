@@ -1,4 +1,5 @@
 defaults:
+  - _self_
   - data: bees_initial
   - network: transfer_resnet
   - trainer: trainer

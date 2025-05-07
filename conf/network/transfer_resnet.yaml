@@ -1,4 +1,3 @@
-name: transfer_resnet
 _target_: classification.lightning_modules.transfer_resnet.TransferResNetLitModel
 
 model: 

@@ -1,4 +1,4 @@
-_target_: lightning_pytorch.loggers.WandbLogger
+_target_: pytorch_lightning.loggers.WandbLogger
 project: Bees
 name: ${now:%Y%m%d}_${hydra:job.name}
 save_dir: ${logs_dir}/wandb

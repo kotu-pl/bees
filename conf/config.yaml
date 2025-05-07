@@ -18,4 +18,3 @@ defaults:
     - early_stopping
 
 logs_dir: ${hydra:runtime.cwd}/logs
-resnet_version: 18

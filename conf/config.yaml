@@ -3,9 +3,9 @@ hydra:
   job:
     chdir: false # nie zmieniaj katalogu roboczego
   run:
-    dir: ${hydra:runtime.cwd}/../experiments/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: ${hydra:runtime.cwd}/experiments/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}
   sweep:
-    dir: ${hydra:runtime.cwd}/../experiments/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: ${hydra:runtime.cwd}/experiments/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
 
 defaults:
   - _self_
@@ -17,5 +17,5 @@ defaults:
     - model_checkpoint
     - early_stopping
 
-logs_dir: ${hydra:runtime.cwd}/../logs
+logs_dir: ${hydra:runtime.cwd}/logs
 resnet_version: 18

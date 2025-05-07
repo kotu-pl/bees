@@ -1,3 +1,12 @@
+hydra:
+  output_subdir: null # nie twórz .hydra wewnątrz run‑dir
+  job:
+    chdir: false # nie zmieniaj katalogu roboczego
+  run:
+    dir: ${hydra:runtime.cwd}/../experiments/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: ${hydra:runtime.cwd}/../experiments/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
 defaults:
   - _self_
   - data: bees_initial

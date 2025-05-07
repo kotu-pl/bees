@@ -1,0 +1,7 @@
+_target_: lightning.pytorch.loggers.WandbLogger
+project: Bees
+name: ${now:%Y%m%d}_${hydra:job.name}
+save_dir: ${logs_dir}/wandb
+dir: ${logs_dir}/wandb
+job_type: train
+log_model: True

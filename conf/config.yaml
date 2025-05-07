@@ -12,9 +12,10 @@ defaults:
   - data: bees_initial
   - network: transfer_resnet
   - trainer: trainer
-  - logger: tensorboard
+  - logger: wandb
   - callbacks:
     - model_checkpoint
     - early_stopping
 
+logs_dir: ${hydra:runtime.cwd}/../logs
 resnet_version: 18

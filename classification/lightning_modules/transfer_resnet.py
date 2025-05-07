@@ -11,13 +11,13 @@ import torchmetrics
 from torchvision import models
 
 class TransferResNetLitModel(pl.LightningModule):
-    def __init__(self, num_classes, learning_rate=1e-3):
+    def __init__(self, model, num_classes, learning_rate=1e-3):
         super().__init__()
         self.save_hyperparameters()
         self.learning_rate = learning_rate
         self.num_classes = num_classes
 
-        self.model = models.resnet18(pretrained=True) # dodanie pretrenowanego resnet18
+        self.model = model
         self.freeze_model() # zamrożenie modeli
         self.adjust_fc_layer() # stosowne zakończenie sieci
 

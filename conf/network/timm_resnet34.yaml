@@ -1,0 +1,9 @@
+_target_: classification.lightning_modules.generic_timm_model.GenericTimmLitModel
+
+model:
+  _target_: timm.create_model
+  model_name: resnet34
+  pretrained: True
+  num_classes: 5
+
+learning_rate: 1e-3

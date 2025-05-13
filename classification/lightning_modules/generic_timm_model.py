@@ -6,27 +6,16 @@ import torch.optim as optim
 import pytorch_lightning as pl
 import torchmetrics
 
-from timm.models.resnet import ResNet
-from timm.models.densenet import DenseNet
-from timm.models.regnet import RegNet
-from timm.models.efficientnet import EfficientNet
-from timm.models.mobilenetv3 import MobileNetV3
-from timm.models.convnext import ConvNeXt
-from timm.models.swin_transformer import SwinTransformer
-from timm.models.vision_transformer import VisionTransformer
-
-class GenericLitModel(pl.LightningModule):
-    def __init__(self, model, num_classes, learning_rate=1e-3, freeze_backbone: bool = True):
+class GenericTimmLitModel(pl.LightningModule):
+    def __init__(self, model, learning_rate=1e-3, freeze_backbone: bool = True):
         super().__init__()
         self.save_hyperparameters()
 
         self.model = model
-        self.num_classes = num_classes
         self.learning_rate = learning_rate
-        self.training_type = training_type.lower()
 
-        # stosowne zakończenie sieci
-        self.adjust_fc_layer()
+        # Zakończenie sieci ogarnia `timm` w trakcie tworzenia modelu
+        # self.adjust_fc_layer()
 
         # zamrożenie modeli
         if freeze_backbone:
@@ -35,28 +24,6 @@ class GenericLitModel(pl.LightningModule):
     def freeze_model(self):
         for param in self.model.parameters():
             param.requires_grad = False
-
-    def adjust_fc_layer(self):
-        if isinstance(self.model, (ResNet, RegNet)):
-            in_f = self.model.fc.in_features
-            self.model.fc = nn.Linear(in_f, self.num_classes)
-        elif isinstance(self.model, DenseNet):
-            in_f = self.model.classifier.in_features
-            self.model.classifier = nn.Linear(in_f, self.num_classes)
-        elif isinstance(self.model, EfficientNet):
-            in_f = self.model.classifier[1].in_features
-            self.model.classifier[1] = nn.Linear(in_f, self.num_classes)
-        elif isinstance(self.model, MobileNetV3):
-            in_f = self.model.classifier[3].in_features
-            self.model.classifier[3] = nn.Linear(in_f, self.num_classes)
-        elif isinstance(self.model, ConvNeXt):
-            in_f = self.model.classifier[2].in_features
-            self.model.classifier[2] = nn.Linear(in_f, self.num_classes)
-        elif isinstance(self.model, (SwinTransformer, VisionTransformer)):
-            in_f = self.model.head.in_features
-            self.model.head = nn.Linear(in_f, self.num_classes)
-        else:
-            raise ValueError("Nieznana struktura klasyfikatora")
 
     def forward(self, x):
         return self.model(x)
@@ -73,8 +40,10 @@ class GenericLitModel(pl.LightningModule):
     def common_test_valid_step(self, batch, batch_idx):
         loss, outputs, y = self.common_step(batch, batch_idx)
         preds = torch.argmax(outputs, dim=1)
+        # liczbę klas wyciągam z wektora logitów
+        num_classes = outputs.size(1)
         acc = torchmetrics.functional.accuracy(
-            preds, y, num_classes=self.num_classes, task="multiclass"
+            preds, y, num_classes=num_classes, task="multiclass"
         )
         return loss, acc
 

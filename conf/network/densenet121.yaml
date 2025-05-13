@@ -1,0 +1,7 @@
+_target_: classification.lightning_modules.transfer_resnet.TransferDenseNetLitModel
+
+model: 
+  _target_: torchvision.models.densenet121
+  pretrained: True
+learning_rate: 1e-3
+num_classes: 5

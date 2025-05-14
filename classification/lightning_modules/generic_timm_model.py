@@ -9,21 +9,25 @@ import torchmetrics
 class GenericTimmLitModel(pl.LightningModule):
     def __init__(self, model, learning_rate=1e-3, freeze_backbone: bool = True):
         super().__init__()
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore=["model"])
 
         self.model = model
         self.learning_rate = learning_rate
 
+        # zamrożenie modeli
+        if freeze_backbone:
+            self.freeze_backbone()
+
         # Zakończenie sieci ogarnia `timm` w trakcie tworzenia modelu
         # self.adjust_fc_layer()
 
-        # zamrożenie modeli
-        if freeze_backbone:
-            self.freeze_model()
-
-    def freeze_model(self):
+    def freeze_backbone(self):
+        # zamrożenie wszystkiego
         for param in self.model.parameters():
             param.requires_grad = False
+        # odmrożenie classifier/fc
+        for p in self.model.get_classifier().parameters():
+            p.requires_grad = True
 
     def forward(self, x):
         return self.model(x)

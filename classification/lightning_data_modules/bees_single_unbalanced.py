@@ -12,7 +12,7 @@ import os.path as osp
 
 from .transforms_utils import ResizePad224
 
-class BeesSingleBalancedDataModule(pl.LightningDataModule):
+class BeesSingleUnbalancedDataModule(pl.LightningDataModule):
     def __init__(self, batch_size, data_dir: str = '', zip_path: str = '', resize_pad_224: bool = False):
         super().__init__()
         self.data_dir = data_dir

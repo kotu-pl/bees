@@ -1,4 +1,4 @@
-_target_: classification.lightning_data_modules.bees_single_unbalanced.BeesSingleUnbalancedDataModule
+_target_: classification.lightning_data_modules.bees_single_balanced.BeesSingleBalancedDataModule
 batch_size: 16
 data_dir: '/content/bees_dataset'
 zip_path: '/content/bees_dataset_300.zip'

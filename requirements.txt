@@ -3,3 +3,4 @@ pytorch-lightning==2.1
 wandb
 hydra-core
 timm
+scikit-learn

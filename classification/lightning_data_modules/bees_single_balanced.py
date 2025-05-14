@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import DataLoader, WeightedRandomSampler
+from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
 import pytorch_lightning as pl
 from torchvision.datasets import ImageFolder
 from torch.utils.data import random_split

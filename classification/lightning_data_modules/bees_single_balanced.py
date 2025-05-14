@@ -14,10 +14,11 @@ import os.path as osp
 from .transforms_utils import ResizePad224
 
 class BeesSingleBalancedDataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, data_dir: str = '', zip_path: str = '', resize_pad_224: bool = False):
+    def __init__(self, batch_size, num_workers, data_dir: str = '', zip_path: str = '', resize_pad_224: bool = False):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
+        self.num_workers = num_workers
 
         image_transformations = []
         if resize_pad_224:
@@ -70,10 +71,10 @@ class BeesSingleBalancedDataModule(pl.LightningDataModule):
             )
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, sampler=self.train_sampler)
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, sampler=self.train_sampler, num_workers=self.num_workers)
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size)
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=self.num_workers)
 
     def test_dataloader(self):
-        return DataLoader(self.test_dataset, batch_size=self.batch_size)
+        return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=self.num_workers)

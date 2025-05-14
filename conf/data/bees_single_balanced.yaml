@@ -1,5 +1,6 @@
 _target_: classification.lightning_data_modules.bees_single_balanced.BeesSingleBalancedDataModule
 batch_size: 16
+num_workers: 2
 data_dir: '/content/bees_dataset'
 zip_path: '/content/bees_dataset_300.zip'
 resize_pad_224: False

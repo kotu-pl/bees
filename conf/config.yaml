@@ -22,5 +22,5 @@ defaults:
 
 resnet_version: 34
 densenet_version: 121
-convnext_version: convnext_tiny
+convnext_version: tiny
 efficientnet_version: _b4

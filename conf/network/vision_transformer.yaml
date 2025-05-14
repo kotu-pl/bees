@@ -1,0 +1,10 @@
+_target_: classification.lightning_modules.generic_timm_model.GenericTimmLitModel
+
+model:
+  _target_: timm.create_model
+  model_name: ${vision_transformer_base}_${vision_transformer_version}
+  pretrained: True
+  num_classes: 5
+
+learning_rate: 1e-3
+freeze_backbone: True

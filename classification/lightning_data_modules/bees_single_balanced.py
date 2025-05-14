@@ -13,24 +13,38 @@ import os.path as osp
 
 from .transforms_utils import ResizePad224
 
+IMAGENET_MEAN = [0.485, 0.456, 0.406]
+IMAGENET_STD  = [0.229, 0.224, 0.225]
+
 class BeesSingleBalancedDataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, num_workers, data_dir: str = '', zip_path: str = '', resize_pad_224: bool = False):
+    def __init__(self, batch_size, num_workers, data_dir: str = '', zip_path: str = '', resize_pad_224: bool = False, augmentation: bool = False):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.num_workers = num_workers
+        self.train_transform = []
+        self.eval_transform = []
 
-        image_transformations = []
+        aug_transform = [
+            RandomResizedCrop(224, scale=(0.8, 1.0)),
+            RandomHorizontalFlip(p=0.5),
+            RandomRotation(degrees=15),
+            ColorJitter(0.2, 0.2, 0.2, 0.1)
+        ]
+        base_transform = [
+            ToTensor(), Normalize(IMAGENET_MEAN, IMAGENET_STD)
+        ]
+
         if resize_pad_224:
-            image_transformations.append(
-                ResizePad224()
-            )
-        image_transformations.extend(
-            [ ToTensor(), Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) ]
-        )
+            self.train_transform.append(ResizePad224())
+            self.eval_transform.append(ResizePad224())
 
-        self.imagenet_transform = Compose(image_transformations)
-        self.num_classes = 5
+        if augmentation:
+            self.train_transform.extend(aug_transform)
+
+        self.train_transform.extend(base_transform)
+        self.eval_transform.extend(base_transform)
+
         self.zip_name = zip_path
 
     def prepare_data(self):
@@ -42,7 +56,7 @@ class BeesSingleBalancedDataModule(pl.LightningDataModule):
                 zip_ref.extractall(self.data_dir)
 
     def setup(self, stage=None):
-        full_dataset = ImageFolder(self.data_dir, transform=self.imagenet_transform)
+        full_dataset = ImageFolder(self.data_dir)
 
         # losowy podział, z równowagą, na train i temp
         indices = list(range(len(full_dataset)))
@@ -60,6 +74,10 @@ class BeesSingleBalancedDataModule(pl.LightningDataModule):
         self.val_dataset = Subset(full_dataset, [tmp_idx[i] for i in val_idx])
         self.test_dataset = Subset(full_dataset, [tmp_idx[i] for i in test_idx])
 
+        self.train_dataset.dataset.transform = self.train_transform
+        self.val_dataset.dataset.transform = self.eval_transform
+        self.test_dataset.dataset.transform = self.eval_transform
+
         # sampler z wagami
         if stage in ("fit", None):
             targets = [full_dataset.imgs[i][1] for i in train_idx]
@@ -71,10 +89,25 @@ class BeesSingleBalancedDataModule(pl.LightningDataModule):
             )
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, sampler=self.train_sampler, num_workers=self.num_workers)
+        return DataLoader(
+            self.train_dataset,
+            batch_size=self.batch_size,
+            sampler=self.train_sampler,
+            num_workers=self.num_workers,
+            pin_memory=True,
+            persistent_workers=True
+        )
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(
+            self.val_dataset,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers
+        )
 
     def test_dataloader(self):
-        return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(
+            self.test_dataset,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers
+        )

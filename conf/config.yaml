@@ -25,3 +25,4 @@ densenet_version: 121
 convnext_version: tiny
 efficientnet_version: _b4
 mobilenetv3_version: large_100
+regnet_version: y_3.2gf

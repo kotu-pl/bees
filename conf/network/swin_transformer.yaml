@@ -2,7 +2,7 @@ _target_: classification.lightning_modules.generic_timm_model.GenericTimmLitMode
 
 model:
   _target_: timm.create_model
-  model_name: swin${swin_version}
+  model_name: swin${swin_transformer_version}
   pretrained: True
   num_classes: 5
 

@@ -1,4 +1,3 @@
-
 _target_: classification.lightning_modules.generic_timm_model.GenericTimmLitModel
 
 model:

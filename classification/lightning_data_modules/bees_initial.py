@@ -10,13 +10,24 @@ import gdown
 import zipfile
 import os.path as osp
 
+from .transforms_utils import ResizePad224
+
 class BeesDataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, data_dir: str = '', zip_path: str = ''):
+    def __init__(self, batch_size, data_dir: str = '', zip_path: str = '', resize_pad_224: bool = False):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
-        self.image_size = (150, 300)
-        self.imagenet_transform = Compose([ToTensor(), Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+
+        image_transformations = []
+        if resize_pad_224:
+            image_transformations.append(
+                ResizePad224()
+            )
+        image_transformations.extend(
+            [ ToTensor(), Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) ]
+        )
+
+        self.imagenet_transform = Compose(image_transformations)
         self.num_classes = 5
         self.zip_name = zip_path
 

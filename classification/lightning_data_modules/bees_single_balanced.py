@@ -5,6 +5,7 @@ from torchvision.datasets import ImageFolder
 from torch.utils.data import random_split
 from torchvision.transforms import Resize, Compose, ToTensor, Normalize
 from sklearn.model_selection import StratifiedShuffleSplit
+import numpy as np
 
 import gdown
 import zipfile

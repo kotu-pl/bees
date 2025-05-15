@@ -3,8 +3,7 @@ from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
 import pytorch_lightning as pl
 from torchvision.datasets import ImageFolder
 from torch.utils.data import random_split
-from torchvision.transforms import RandomResizedCrop, RandomHorizontalFlip,
-RandomRotation, ColorJitter, Resize, Compose, ToTensor, Normalize
+from torchvision.transforms import RandomResizedCrop, RandomHorizontalFlip, RandomRotation, ColorJitter, Resize, Compose, ToTensor, Normalize
 from sklearn.model_selection import StratifiedShuffleSplit
 import numpy as np
 

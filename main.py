@@ -32,8 +32,11 @@ def main(cfg: DictConfig):
     # Initialize trainer
     trainer = instantiate(cfg.trainer)
 
+    overrides = HydraConfig.get().overrides.task
     trainer.logger.experiment.config.update(
-        OmegaConf.to_container(cfg, resolve=True),
+        {"overrides": overrides,
+         "seed": cfg.seed,
+         "trainer": {"max_epochs": cfg.trainer.max_epochs}},
         allow_val_change=True
     )
 

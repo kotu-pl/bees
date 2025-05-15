@@ -39,7 +39,6 @@ def main(cfg: DictConfig):
     overrides = HydraConfig.get().overrides.task
     trainer.logger.experiment.config.update(
         {"overrides": overrides,
-         "seed": cfg.seed,
          "trainer": {"max_epochs": cfg.trainer.max_epochs}},
         allow_val_change=True
     )

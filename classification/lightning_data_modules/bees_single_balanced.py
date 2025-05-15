@@ -20,6 +20,7 @@ class BeesSingleBalancedDataModule(pl.LightningDataModule):
     def __init__(self, batch_size, num_workers, data_dir: str = '', zip_path: str = '', resize_pad_224: bool = False, augmentation: bool = False):
         super().__init__()
         self.data_dir = data_dir
+        self.zip_name = zip_path
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.train_transform = []
@@ -45,7 +46,8 @@ class BeesSingleBalancedDataModule(pl.LightningDataModule):
         self.train_transform.extend(base_transform)
         self.eval_transform.extend(base_transform)
 
-        self.zip_name = zip_path
+        self.train_transform = Compose(self.train_transform)
+        self.eval_transform  = Compose(self.eval_transform)
 
     def prepare_data(self):
         if not osp.isfile(self.zip_name):

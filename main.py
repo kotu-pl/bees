@@ -3,6 +3,7 @@ import sys
 import logging
 import hydra
 import uuid
+import wandb
 from hydra.utils import instantiate
 from hydra.utils import get_original_cwd, to_absolute_path
 from hydra.core.hydra_config import HydraConfig
@@ -49,6 +50,8 @@ def main(cfg: DictConfig):
 
     # Evaluate the model on the held out test set ⚡⚡
     trainer.test(model=model, datamodule=data_module)
+
+    wandb.finish()
 
 if __name__ == "__main__":
     main()

@@ -32,6 +32,11 @@ def main(cfg: DictConfig):
     # Initialize trainer
     trainer = instantiate(cfg.trainer)
 
+    trainer.logger.experiment.config.update(
+        OmegaConf.to_container(cfg, resolve=True),
+        allow_val_change=True
+    )
+
     # Train the model
     trainer.fit(model, data_module)
 

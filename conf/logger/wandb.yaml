@@ -7,7 +7,7 @@ resume: never
 save_dir: ${logs_dir}/wandb/${hydra:sweep.subdir}
 
 name: ${now:%Y%m%d}_${hydra:job.name}_${hydra:job.num}
-group: multirun_${path:basename,${hydra:sweep.dir}}
+group: multirun_${basename:${hydra:sweep.dir}}
 
 mode: online
 job_type: train

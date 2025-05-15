@@ -20,6 +20,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
     
 OmegaConf.register_new_resolver("uuid", lambda *args: uuid.uuid4().hex)
+OmegaConf.register_new_resolver("basename", lambda p: os.path.basename(os.path.normpath(str(p))))
 
 @hydra.main(version_base="1.3", config_path="conf", config_name="config")
 def main(cfg: DictConfig):

@@ -14,4 +14,3 @@ log_model: False
 tags:
   - bees
   - multirun
-  - ${hydra:job.override_dirname}

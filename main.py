@@ -5,6 +5,7 @@ import hydra
 import uuid
 from hydra.utils import instantiate
 from hydra.utils import get_original_cwd, to_absolute_path
+from hydra.core.hydra_config import HydraConfig
 
 from omegaconf import DictConfig, OmegaConf
 import pytorch_lightning as pl

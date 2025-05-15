@@ -4,6 +4,7 @@ project: Bees
 entity: kotu-pl
 id: ${uuid:}
 resume: never
+reinit: True
 save_dir: ${logs_dir}/wandb/${hydra:sweep.subdir}
 
 name: ${now:%Y%m%d}_${hydra:job.name}_${hydra:job.num}

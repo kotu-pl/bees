@@ -7,8 +7,8 @@ resume: never
 reinit: True
 save_dir: ${logs_dir}/wandb/${hydra:sweep.subdir}
 
-group: multirun_${run_ts}
-name: ${hydra:job.num}_${network.model.model_name}
+group: multirun_${sweep_ts}
+name: ${network.model.model_name} # sweep_ts: ${basename:${hydra:sweep.dir}} 
 
 mode: online
 job_type: train

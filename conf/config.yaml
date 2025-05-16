@@ -1,12 +1,12 @@
 hydra:
   output_subdir: null # nie twórz .hydra wewnątrz run‑dir
   job:
-    chdir: false # nie zmieniaj katalogu roboczego
+    chdir: true # zmień katalog roboczy
   run:
     dir: ${hydra:runtime.cwd}/experiments/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}
   sweep:
     dir: ${oc.env:PWD}/experiments/multirun
-    subdir: ${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${now:%Y-%m-%d_%H-%M-%S}
 
 logs_dir: ${hydra:runtime.cwd}/logs
 
@@ -31,3 +31,4 @@ vision_transformer_base: deit
 vision_transformer_version: small_patch16_224
 
 run_ts: ${now:%Y%m%d%H%M%S}
+sweep_ts: ${basename:${hydra:sweep.dir}}

@@ -2,13 +2,13 @@ _target_: pytorch_lightning.loggers.WandbLogger
 
 project: Bees
 entity: kotu-pl
-id: ${uuid:}
+id: ${hydra:job.id}
 resume: never
-reinit: True
+reinit: finish_previous
 save_dir: ${logs_dir}/wandb/${hydra:sweep.subdir}
 
-group: multirun_${sweep_ts}
-name: ${network.model.model_name} # sweep_ts: ${basename:${hydra:sweep.dir}} 
+group: multirun_${basename:${hydra:sweep.dir}}
+name: ${network.model.model_name}_${hydra:job.num}
 
 mode: online
 job_type: train

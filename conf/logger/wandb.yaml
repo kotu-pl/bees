@@ -8,7 +8,7 @@ reinit: True
 save_dir: ${logs_dir}/wandb/${hydra:sweep.subdir}
 
 name: ${now:%Y%m%d}_${hydra:job.name}_${hydra:job.num}
-group: multirun_${basename:${hydra:sweep.dir}}
+group: multirun_${now:%Y%m%d%H%i%s}
 
 mode: online
 job_type: train

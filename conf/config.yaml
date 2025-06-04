@@ -1,4 +1,5 @@
-run_ts: ${now:%Y-%m-%d_%H-%M-%S}
+run_ts: ${now:%Y%m%d%H%M%S}
+sweep_ts: ${basename:${hydra:sweep.dir}}
 
 hydra:
   job:
@@ -30,6 +31,3 @@ regnet_version: y_3.2gf
 swin_transformer_version: _tiny_patch4_window7_224
 vision_transformer_base: deit
 vision_transformer_version: small_patch16_224
-
-run_ts: ${now:%Y%m%d%H%M%S}
-sweep_ts: ${basename:${hydra:sweep.dir}}

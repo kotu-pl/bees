@@ -1,6 +1,6 @@
 _target_: pytorch_lightning.loggers.WandbLogger
 
-project: Bees
+project: Bees2
 entity: kotu-pl
 id: ${hydra:job.id}
 resume: never

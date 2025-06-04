@@ -26,7 +26,7 @@ OmegaConf.register_new_resolver("basename", lambda p: os.path.basename(os.path.d
 @hydra.main(version_base="1.3", config_path="conf", config_name="config")
 def main(cfg: DictConfig):
     # debugowanie
-    print(OmegaConf.to_yaml(cfg))
+    # print(OmegaConf.to_yaml(cfg))
 
     data_module = instantiate(cfg.data)
     data_module.prepare_data()

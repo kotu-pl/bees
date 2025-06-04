@@ -2,9 +2,9 @@ hydra:
   job:
     chdir: true # zmień katalog roboczy
   run:
-    dir: ${hydra:runtime.cwd}/experiments/runs/${env:RUN_TS}/${hydra:job.num}
+    dir: ${hydra:runtime.cwd}/experiments/runs/${oc.env:RUN_TS}/${hydra:job.num}
   sweep:
-    dir: ${oc.env:PWD}/experiments/multirun/${env:RUN_TS}
+    dir: ${oc.env:PWD}/experiments/multirun/${oc.env:RUN_TS}
     subdir: ${hydra:job.num}
 
 logs_dir: ${hydra:runtime.cwd}/logs

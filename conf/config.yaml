@@ -1,4 +1,4 @@
-run_ts: ${now:%Y%m%d%H%M%S}
+run_ts: ${now:%Y-%m-%d_%H-%M-%S}
 sweep_ts: ${basename:${hydra:sweep.dir}}
 
 hydra:

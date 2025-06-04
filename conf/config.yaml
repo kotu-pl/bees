@@ -1,10 +1,12 @@
+run_ts: ${now:%Y-%m-%d_%H-%M-%S}
+
 hydra:
   job:
     chdir: true # zmień katalog roboczy
   run:
-    dir: ${hydra:runtime.cwd}/experiments/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: ${hydra:runtime.cwd}/experiments/runs/${run_ts}/${hydra:job.num}
   sweep:
-    dir: ${oc.env:PWD}/experiments/multirun/${now:%Y-%m-%d_%H-%M-%S}
+    dir: ${oc.env:PWD}/experiments/multirun/${run_ts}
     subdir: ${hydra:job.num}
 
 logs_dir: ${hydra:runtime.cwd}/logs

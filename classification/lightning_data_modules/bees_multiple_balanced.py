@@ -14,25 +14,10 @@ import zipfile
 import os.path as osp
 
 from .transforms_utils import ResizePad224
+from .multi_label_dataset import MultiLabelDataset
 
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD  = [0.229, 0.224, 0.225]
-
-class MultiLabelDataset(Dataset):
-    def __init__(self, samples, labels, transform=None):
-        self.samples = samples
-        self.labels = labels
-        self.transform = transform
-        self.loader = default_loader
-
-    def __len__(self):
-        return len(self.samples)
-
-    def __getitem__(self, idx):
-        img = self.loader(self.samples[idx])
-        if self.transform:
-            img = self.transform(img)
-        return img, torch.tensor(self.labels[idx]).float()
 
 class BeesMultipleBalancedDataModule(pl.LightningDataModule):
     def __init__(self, batch_size, num_workers, data_dir: str = '', zip_path: str = '',  resize_pad_224: bool = False, augmentation: bool = False):

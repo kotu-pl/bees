@@ -12,7 +12,7 @@ import numpy as np
 import gdown
 import zipfile
 import os
-import glob
+from glob import glob
 import os.path as osp
 
 from .transforms_utils import ResizePad224

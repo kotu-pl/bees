@@ -33,7 +33,7 @@ class GenericTimmLitModel(pl.LightningModule):
         return self.model(x)
 
     def compute_loss(self, x, y):
-        return F.cross_entropy(x, y)
+        return F.binary_cross_entropy_with_logits(x, y.float())
 
     def common_step(self, batch, batch_idx):
         x, y = batch
@@ -43,11 +43,10 @@ class GenericTimmLitModel(pl.LightningModule):
 
     def common_test_valid_step(self, batch, batch_idx):
         loss, outputs, y = self.common_step(batch, batch_idx)
-        preds = torch.argmax(outputs, dim=1)
-        # liczbę klas wyciągam z wektora logitów
-        num_classes = outputs.size(1)
+        probs = torch.sigmoid(outputs)
+        preds = (probs > 0.5).int()
         acc = torchmetrics.functional.accuracy(
-            preds, y, num_classes=num_classes, task="multiclass"
+            preds, y.int(), task="multilabel", num_labels=outputs.size(1)
         )
         return loss, acc
 
@@ -73,3 +72,10 @@ class GenericTimmLitModel(pl.LightningModule):
         # tylko trenowalne parametry (czyli fc po zamrożeniu reszty)
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optimizer
+
+    def predict_step(self, batch, batch_idx):
+        x, _ = batch
+        logits = self(x)
+        probs = torch.sigmoid(logits)
+        preds = (probs > 0.5).int()
+        return preds

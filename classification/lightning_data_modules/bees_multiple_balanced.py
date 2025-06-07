@@ -108,10 +108,6 @@ class BeesMultipleBalancedDataModule(pl.LightningDataModule):
             transform=self.eval_transform
         )
 
-        self.train_dataset.dataset.transform = self.train_transform
-        self.val_dataset.dataset.transform = self.eval_transform
-        self.test_dataset.dataset.transform = self.eval_transform
-
         # sampler z wagami
         if stage in ("fit", None):
             class_counts = np.sum([labels[i] for i in train_idx], axis=0)
@@ -158,5 +154,5 @@ class BeesMultipleBalancedDataModule(pl.LightningDataModule):
                 img_to_labels[img_path][class_to_idx[cls]] = 1
 
         img_paths = list(img_to_labels.keys())
-        labels    = list(img_to_labels.values())
+        labels  = list(img_to_labels.values())
         return img_paths, labels

@@ -18,9 +18,10 @@ IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD  = [0.229, 0.224, 0.225]
 
 class BeesMultipleBalancedDataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, num_workers, data_dir: str = '', resize_pad_224: bool = False, augmentation: bool = False):
+    def __init__(self, batch_size, num_workers, data_dir: str = '', zip_path: str = '',  resize_pad_224: bool = False, augmentation: bool = False):
         super().__init__()
         self.data_dir = data_dir
+        self.zip_name = zip_path
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.train_transform = []
@@ -50,13 +51,15 @@ class BeesMultipleBalancedDataModule(pl.LightningDataModule):
         self.eval_transform  = Compose(self.eval_transform)
 
     def prepare_data(self):
-        self.builder = tfds.builder('bee_dataset', data_dir=self.data_dir)
-        self.builder.download_and_prepare()
+        if not osp.isfile(self.zip_name):
+            gdown.download('https://drive.google.com/uc?id=1JXkohyvREZ_05oAvYf3Ygqj_zds1XkCj', output=self.zip_name, quiet=False)
+
+        if not osp.isdir(self.data_dir):
+            with zipfile.ZipFile(self.zip_name, 'r') as zip_ref:
+                zip_ref.extractall(self.data_dir)
 
     def setup(self, stage=None):
-        full_dataset = self.builder.as_dataset(
-            split=['train'], as_supervised=False, shuffle_files=True
-        ).map(add_bee_output).map(rename_labels)
+        full_dataset = ImageFolder(self.data_dir)
 
         # losowy podział, z równowagą, na train i temp
         indices = list(range(len(full_dataset)))

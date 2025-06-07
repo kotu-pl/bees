@@ -52,7 +52,7 @@ class BeesMultipleBalancedDataModule(pl.LightningDataModule):
 
     def prepare_data(self):
         if not osp.isfile(self.zip_name):
-            gdown.download('https://drive.google.com/uc?id=1JXkohyvREZ_05oAvYf3Ygqj_zds1XkCj', output=self.zip_name, quiet=False)
+            gdown.download('https://drive.google.com/uc?id=1mhpNh6t741xbVciUOPz0xznh_DwZWoK3', output=self.zip_name, quiet=False)
 
         if not osp.isdir(self.data_dir):
             with zipfile.ZipFile(self.zip_name, 'r') as zip_ref:

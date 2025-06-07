@@ -94,14 +94,14 @@ class BeesMultiLabelDataModule(pl.LightningDataModule):
         )
 
         self.val_dataset = MultiLabelDataset(
-            [img_paths[tmp_idx[i]] for i in val_idx],
-            [labels[tmp_idx[i]] for i in val_idx],
+            [img_paths[i] for i in val_idx],
+            [labels[i]   for i in val_idx],
             transform=self.eval_transform
         )
 
         self.test_dataset = MultiLabelDataset(
-            [img_paths[tmp_idx[i]] for i in test_idx],
-            [labels[tmp_idx[i]] for i in test_idx],
+            [img_paths[i] for i in test_idx],
+            [labels[i]   for i in test_idx],
             transform=self.eval_transform
         )
 

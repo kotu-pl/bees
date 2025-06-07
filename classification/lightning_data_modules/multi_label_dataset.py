@@ -1,5 +1,6 @@
 import torch
 from torchvision.datasets.folder import default_loader
+from torch.utils.data import Dataset
 
 class MultiLabelDataset(Dataset):
     def __init__(self, samples, labels, transform=None):

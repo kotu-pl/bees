@@ -11,7 +11,7 @@ logs_dir: ${hydra:runtime.cwd}/logs
 
 defaults:
   - _self_
-  - data: bees_single_unbalanced
+  - data: bees_multiple_balanced
   - network: resnet
   - trainer: trainer
   - logger: wandb

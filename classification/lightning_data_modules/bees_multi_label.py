@@ -22,7 +22,7 @@ from .multi_label_dataset import MultiLabelDataset
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD  = [0.229, 0.224, 0.225]
 
-class BeesMultipleBalancedDataModule(pl.LightningDataModule):
+class BeesMultiLabelDataModule(pl.LightningDataModule):
     def __init__(self, batch_size, num_workers, data_dir: str = '', zip_path: str = '',  resize_pad_224: bool = False, augmentation: bool = False,  balance: list[str] | None = None):
         super().__init__()
         self.data_dir = data_dir

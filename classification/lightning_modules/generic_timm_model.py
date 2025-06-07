@@ -80,7 +80,6 @@ class GenericTimmLitModel(pl.LightningModule):
         loss, acc = self.common_test_valid_step(batch, batch_idx)
         self.log('train_loss', loss, on_step=True, on_epoch=True, logger=True)
         self.log('train_acc', acc, on_step=True, on_epoch=True, logger=True)
-        self.log('train_loss_type', self.loss_fn, prog_bar=False, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):

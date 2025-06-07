@@ -4,3 +4,4 @@ wandb
 hydra-core
 timm
 scikit-learn
+iterative-stratification

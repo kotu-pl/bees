@@ -5,3 +5,5 @@ data_dir: '/content/bees_dataset'
 zip_path: '/content/bees_dataset_300_with_bees.zip'
 resize_pad_224: False
 augmentation: False
+balance:
+  - stratification

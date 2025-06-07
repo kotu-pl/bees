@@ -16,14 +16,11 @@ import os
 from glob import glob
 import os.path as osp
 
-from .transforms_utils import ResizePad224
 from .multi_label_dataset import MultiLabelDataset
-
-IMAGENET_MEAN = [0.485, 0.456, 0.406]
-IMAGENET_STD  = [0.229, 0.224, 0.225]
+from .augmentations import AugmentationFactory
 
 class BeesMultiLabelDataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, num_workers, data_dir: str = '', zip_path: str = '',  resize_pad_224: bool = False, augmentation: bool = False,  balance: list[str] | None = None):
+    def __init__(self, batch_size, num_workers, data_dir: str = '', zip_path: str = '',  resize_pad_224: bool = False, augmentation: str = '',  balance: list[str] | None = None):
         super().__init__()
         self.data_dir = data_dir
         self.zip_name = zip_path
@@ -36,28 +33,12 @@ class BeesMultiLabelDataModule(pl.LightningDataModule):
         self.train_sampler: WeightedRandomSampler | None = None
         self.pos_weight: torch.Tensor | None = None
 
-        aug_transform = [
-            RandomResizedCrop(224, scale=(0.8, 1.0)),
-            RandomHorizontalFlip(p=0.5),
-            RandomRotation(degrees=15),
-            ColorJitter(0.2, 0.2, 0.2, 0.1)
-        ]
-        base_transform = [
-            ToTensor(), Normalize(IMAGENET_MEAN, IMAGENET_STD)
-        ]
+        aug_factory = AugmentationFactory(
+            level=augmentation, resize_pad_224=resize_pad_224
+        )
 
-        if resize_pad_224:
-            self.train_transform.append(ResizePad224())
-            self.eval_transform.append(ResizePad224())
-
-        if augmentation:
-            self.train_transform.extend(aug_transform)
-
-        self.train_transform.extend(base_transform)
-        self.eval_transform.extend(base_transform)
-
-        self.train_transform = Compose(self.train_transform)
-        self.eval_transform  = Compose(self.eval_transform)
+        self.train_transform = aug_factory.build(train=True)
+        self.eval_transform  = aug_factory.build(train=False)
 
     def prepare_data(self):
         if not osp.isfile(self.zip_name):

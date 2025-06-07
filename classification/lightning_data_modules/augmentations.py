@@ -18,7 +18,7 @@ class AugmentationFactory:
         self.interpolation = interpolation
         self.fill = fill
 
-    def build(self, train: bool = True) -> transforms.Compose:
+    def build(self, train: bool = True):
         tf = []
         if self.resize_pad_224:
             tf.append(ResizePad224())
@@ -27,9 +27,10 @@ class AugmentationFactory:
             tf.extend(self._train_policy())
 
         tf.extend([ToTensor(), Normalize(IMAGENET_MEAN, IMAGENET_STD)])
+
         return transforms.Compose(tf)
 
-    def _train_policy(self) -> list[transforms.Transform]:
+    def _train_policy(self):
         if self.level in ("", "none", "off"):
             return []
 

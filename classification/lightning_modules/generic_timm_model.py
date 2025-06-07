@@ -7,7 +7,7 @@ import pytorch_lightning as pl
 import torchmetrics
 
 class GenericTimmLitModel(pl.LightningModule):
-    def __init__(self, model, learning_rate=1e-3, freeze_backbone: bool = True,  loss_fn: str = "bce"):
+    def __init__(self, model, learning_rate=1e-3, freeze_backbone: bool = True, loss_fn: str = "bce"):
         super().__init__()
         self.save_hyperparameters(ignore=["model"])
         self.loss_fn = loss_fn.lower()
@@ -37,7 +37,9 @@ class GenericTimmLitModel(pl.LightningModule):
         y = y.float()
 
         if self.loss_fn == "bce":
-            return F.binary_cross_entropy_with_logits(x, y)
+            return F.binary_cross_entropy_with_logits(
+                x, y, pos_weight=getattr(self, "pos_weight", None)
+            )
 
         elif self.loss_fn == "dice":
             probs = torch.sigmoid(x)
@@ -49,7 +51,9 @@ class GenericTimmLitModel(pl.LightningModule):
         elif self.loss_fn == "focal":
             gamma = 2.0
             alpha = 0.25
-            bce = F.binary_cross_entropy_with_logits(x, y, reduction='none')
+            bce = F.binary_cross_entropy_with_logits(
+                x, y, reduction='none', pos_weight=getattr(self, "pos_weight", None)
+            )
             pt = torch.exp(-bce)
             focal = alpha * (1 - pt) ** gamma * bce
             return focal.mean()
@@ -105,3 +109,10 @@ class GenericTimmLitModel(pl.LightningModule):
         probs = torch.sigmoid(logits)
         preds = (probs > 0.5).int()
         return preds
+
+    def on_fit_start(self):
+        pos_w = getattr(self.trainer.datamodule, "pos_weight", None)
+        if pos_w is not None:
+            self.register_buffer("pos_weight", pos_w.to(self.device))
+        else:
+            self.pos_weight = None

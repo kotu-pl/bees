@@ -7,6 +7,7 @@ from torch.utils.data import random_split
 from torchvision.transforms import RandomResizedCrop, RandomHorizontalFlip, RandomRotation, ColorJitter, Resize, Compose, ToTensor, Normalize
 from sklearn.model_selection import StratifiedShuffleSplit
 from torchvision.datasets.folder import default_loader
+from iterstrat.ml_stratifiers import MultilabelStratifiedKFold
 import numpy as np
 
 import gdown
@@ -22,7 +23,7 @@ IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD  = [0.229, 0.224, 0.225]
 
 class BeesMultipleBalancedDataModule(pl.LightningDataModule):
-    def __init__(self, batch_size, num_workers, data_dir: str = '', zip_path: str = '',  resize_pad_224: bool = False, augmentation: bool = False):
+    def __init__(self, batch_size, num_workers, data_dir: str = '', zip_path: str = '',  resize_pad_224: bool = False, augmentation: bool = False,  balance: list[str] | None = None):
         super().__init__()
         self.data_dir = data_dir
         self.zip_name = zip_path
@@ -30,6 +31,10 @@ class BeesMultipleBalancedDataModule(pl.LightningDataModule):
         self.num_workers = num_workers
         self.train_transform = []
         self.eval_transform = []
+        self.balance: set[str] = set(balance or [])
+
+        self.train_sampler: WeightedRandomSampler | None = None
+        self.pos_weight: torch.Tensor | None = None
 
         aug_transform = [
             RandomResizedCrop(224, scale=(0.8, 1.0)),
@@ -64,18 +69,23 @@ class BeesMultipleBalancedDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
         img_paths, labels = self.load_multilabel_data()
-
-        # losowy podział, z równowagą, na train i temp
         indices = list(range(len(img_paths)))
-        strat_labels = [tuple(label) for label in labels]
 
-        sss = StratifiedShuffleSplit(n_splits=1, test_size=0.3, random_state=10)
-        train_idx, tmp_idx = next(sss.split(indices, strat_labels))
+        if "stratification" in self.balance:
+            mskf = MultilabelStratifiedKFold(
+                n_splits=10, shuffle=True, random_state=10
+            )
+            train_idx, tmp_idx = next(mskf.split(indices, np.array(labels)))
+        else:
+            rng = np.random.default_rng(10)
+            rng.shuffle(indices)
+            split = int(0.7 * len(indices))
+            train_idx, tmp_idx = indices[:split], indices[split:]
 
-        # podział temp na val i test, 2:1
-        tmp_labels = [strat_labels[i] for i in tmp_idx]
-        sss_val = StratifiedShuffleSplit(n_splits=1, test_size=1/3, random_state=42)
-        val_idx, test_idx = next(sss_val.split(tmp_idx, tmp_labels))
+        rng = np.random.default_rng(42)
+        rng.shuffle(tmp_idx)
+        val_split = int(len(tmp_idx) * 2 / 3)
+        val_idx, test_idx = tmp_idx[:val_split], tmp_idx[val_split:]
 
         self.train_dataset = MultiLabelDataset(
             [img_paths[i] for i in train_idx],
@@ -95,20 +105,31 @@ class BeesMultipleBalancedDataModule(pl.LightningDataModule):
             transform=self.eval_transform
         )
 
-        # sampler z wagami
+        # sampler z wagami lub loss_weights
         if stage in ("fit", None):
             class_counts = np.sum([labels[i] for i in train_idx], axis=0)
-            weights = 1.0 / (class_counts + 1e-6)
-            sample_weights = np.array([np.sum(labels[i] * weights) for i in train_idx])
-            self.train_sampler = WeightedRandomSampler(
-                sample_weights, len(sample_weights), replacement=True
-            )
+
+            if "sampler" in self.balance:
+                weights = 1.0 / (class_counts + 1e-6)
+                sample_weights = np.array([labels[i] @ weights for i in train_idx])
+                self.train_sampler = WeightedRandomSampler(
+                    sample_weights, len(sample_weights), replacement=True
+                )
+
+            if "loss_weights" in self.balance:
+                total = len(train_idx)
+                pos = class_counts
+                neg = total - pos
+                self.pos_weight = torch.tensor(
+                    neg / (pos + 1e-6), dtype=torch.float32
+                )
 
     def train_dataloader(self):
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
-            sampler=self.train_sampler,
+            sampler=self.train_sampler if "sampler" in self.balance else None,
+            shuffle=("sampler" not in self.balance),
             num_workers=self.num_workers,
             pin_memory=True,
             persistent_workers=True

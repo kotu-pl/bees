@@ -7,9 +7,10 @@ import pytorch_lightning as pl
 import torchmetrics
 
 class GenericTimmLitModel(pl.LightningModule):
-    def __init__(self, model, learning_rate=1e-3, freeze_backbone: bool = True):
+    def __init__(self, model, learning_rate=1e-3, freeze_backbone: bool = True,  loss_fn: str = "bce"):
         super().__init__()
         self.save_hyperparameters(ignore=["model"])
+        self.loss_fn = loss_fn.lower()
 
         self.model = model
         self.learning_rate = learning_rate
@@ -33,7 +34,32 @@ class GenericTimmLitModel(pl.LightningModule):
         return self.model(x)
 
     def compute_loss(self, x, y):
-        return F.binary_cross_entropy_with_logits(x, y.float())
+        y = y.float()
+
+        if self.loss_fn == "bce":
+            return F.binary_cross_entropy_with_logits(x, y)
+
+        elif self.loss_fn == "dice":
+            probs = torch.sigmoid(x)
+            smooth = 1e-6
+            intersection = (probs * y).sum()
+            dice = (2. * intersection + smooth) / (probs.sum() + y.sum() + smooth)
+            return 1 - dice
+
+        elif self.loss_fn == "focal":
+            gamma = 2.0
+            alpha = 0.25
+            bce = F.binary_cross_entropy_with_logits(x, y, reduction='none')
+            pt = torch.exp(-bce)
+            focal = alpha * (1 - pt) ** gamma * bce
+            return focal.mean()
+
+        elif self.loss_fn == "hinge":
+            y_hinge = y * 2 - 1  # z {0,1} do {-1,1}
+            return F.multi_label_margin_loss(torch.sigmoid(x), y_hinge.long())
+
+        else:
+            raise ValueError(f"Nieznana funkcja straty: {self.loss_fn}")
 
     def common_step(self, batch, batch_idx):
         x, y = batch
@@ -54,6 +80,7 @@ class GenericTimmLitModel(pl.LightningModule):
         loss, acc = self.common_test_valid_step(batch, batch_idx)
         self.log('train_loss', loss, on_step=True, on_epoch=True, logger=True)
         self.log('train_acc', acc, on_step=True, on_epoch=True, logger=True)
+        self.log('train_loss_type', self.loss_fn, prog_bar=False, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):

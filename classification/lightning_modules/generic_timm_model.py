@@ -7,13 +7,14 @@ import pytorch_lightning as pl
 import torchmetrics
 
 class GenericTimmLitModel(pl.LightningModule):
-    def __init__(self, model, learning_rate=1e-3, freeze_backbone: bool = True, loss_fn: str = "bce"):
+    def __init__(self, model, learning_rate=1e-3, weight_decay: 1e-4, freeze_backbone: bool = True, loss_fn: str = "bce"):
         super().__init__()
         self.save_hyperparameters(ignore=["model"])
         self.loss_fn = loss_fn.lower()
 
         self.model = model
         self.learning_rate = learning_rate
+        self.weight_decay = weight_decay
 
         # zamrożenie modeli
         if freeze_backbone:
@@ -99,11 +100,16 @@ class GenericTimmLitModel(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.learning_rate,
-                                      weight_decay=self.hparams.weight_decay)
+        optimizer = torch.optim.AdamW(
+            self.parameters(),
+            lr=self.hparams.learning_rate,
+            weight_decay=self.hparams.weight_decay
+        )
+
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, mode="min", factor=0.3, patience=1, verbose=True
         )
+
         return {
             "optimizer": optimizer,
             "lr_scheduler": {

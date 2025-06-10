@@ -7,7 +7,7 @@ import pytorch_lightning as pl
 import torchmetrics
 
 class GenericTimmLitModel(pl.LightningModule):
-    def __init__(self, model, learning_rate=1e-3, weight_decay: 1e-4, freeze_backbone: bool = True, loss_fn: str = "bce"):
+    def __init__(self, model, learning_rate=1e-3, weight_decay=1e-4, freeze_backbone: bool = True, loss_fn: str = "bce"):
         super().__init__()
         self.save_hyperparameters(ignore=["model"])
         self.loss_fn = loss_fn.lower()

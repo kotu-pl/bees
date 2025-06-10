@@ -99,9 +99,23 @@ class GenericTimmLitModel(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        # tylko trenowalne parametry (czyli fc po zamrożeniu reszty)
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        return optimizer
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.lr,
+                                      weight_decay=self.hparams.weight_decay)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode="min", factor=0.3, patience=1, verbose=True
+        )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "val_loss",   # <-- kluczowe!
+            },
+        }
+
+#    def configure_optimizers(self):
+#        # tylko trenowalne parametry (czyli fc po zamrożeniu reszty)
+#        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+#        return optimizer
 
     def predict_step(self, batch, batch_idx):
         x, _ = batch

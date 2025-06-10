@@ -99,7 +99,7 @@ class GenericTimmLitModel(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.lr,
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.learning_rate,
                                       weight_decay=self.hparams.weight_decay)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, mode="min", factor=0.3, patience=1, verbose=True
@@ -108,6 +108,7 @@ class GenericTimmLitModel(pl.LightningModule):
             "optimizer": optimizer,
             "lr_scheduler": {
                 "scheduler": scheduler,
+                "interval": "epoch",
                 "monitor": "val_loss",   # <-- kluczowe!
             },
         }

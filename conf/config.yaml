@@ -18,6 +18,7 @@ defaults:
   - callbacks:
     - model_checkpoint
     - early_stopping
+    - backbone_finetuning
 
 resnet_version: 34
 densenet_version: 121

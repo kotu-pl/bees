@@ -1,0 +1,4 @@
+backbone_finetuning:
+  _target_: pytorch_lightning.callbacks.BackboneFinetuning
+  unfreeze_backbone_at_epoch: 5
+  train_bn: True

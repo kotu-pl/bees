@@ -13,6 +13,7 @@ class GenericTimmLitModel(pl.LightningModule):
         self.loss_fn = loss_fn.lower()
 
         self.model = model
+        self.backbone = model # alias dla BackboneFinetuning
         self.learning_rate = learning_rate
         self.weight_decay = weight_decay
 

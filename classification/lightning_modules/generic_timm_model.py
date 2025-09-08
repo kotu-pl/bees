@@ -5,6 +5,7 @@ import torch.optim as optim
 
 import pytorch_lightning as pl
 import torchmetrics
+from torchmetrics.classification import MultilabelAveragePrecision
 
 class GenericTimmLitModel(pl.LightningModule):
     def __init__(self, model, learning_rate=1e-3, weight_decay=1e-4, freeze_backbone: bool = True, loss_fn: str = "bce"):
@@ -13,9 +14,17 @@ class GenericTimmLitModel(pl.LightningModule):
         self.loss_fn = loss_fn.lower()
 
         self.model = model
-        self.backbone = model # alias dla BackboneFinetuning
+        self.backbone = model  # alias dla BackboneFinetuning
         self.learning_rate = learning_rate
         self.weight_decay = weight_decay
+
+        self.num_labels = getattr(self.model, "num_classes", None)
+        if self.num_labels is None:
+            self.num_labels = self.model.get_classifier().out_features
+
+        # Inicjalizacja metryk mAP (macro i micro)
+        self.val_map_macro = MultilabelAveragePrecision(num_labels=self.num_labels, average="macro")
+        self.val_map_micro = MultilabelAveragePrecision(num_labels=self.num_labels, average="micro")
 
         # zamrożenie modeli
         if freeze_backbone:
@@ -80,19 +89,30 @@ class GenericTimmLitModel(pl.LightningModule):
         acc = torchmetrics.functional.accuracy(
             preds, y.int(), task="multilabel", num_labels=outputs.size(1)
         )
-        return loss, acc
+        return loss, acc, probs, y
 
     def training_step(self, batch, batch_idx):
-        loss, acc = self.common_test_valid_step(batch, batch_idx)
+        loss, acc, _, _ = self.common_test_valid_step(batch, batch_idx)
         self.log('train_loss', loss, on_step=True, on_epoch=True, logger=True)
         self.log('train_acc', acc, on_step=True, on_epoch=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, acc = self.common_test_valid_step(batch, batch_idx)
+        loss, acc, probs, y = self.common_test_valid_step(batch, batch_idx)
+        self.val_map_macro.update(probs, y.int())
+        self.val_map_micro.update(probs, y.int())
         self.log('val_loss', loss, prog_bar=True)
         self.log('val_acc', acc, prog_bar=True)
         return loss
+
+    # obliczanie i logowanie metryk na końcu końcu epoki walidacyjnej
+    def on_validation_epoch_end(self):
+        map_macro = self.val_map_macro.compute()
+        map_micro = self.val_map_micro.compute()
+        self.log("val_map_macro", map_macro, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_map_micro", map_micro, prog_bar=False, on_step=False, on_epoch=True, sync_dist=True)
+        self.val_map_macro.reset()
+        self.val_map_micro.reset()
 
     def test_step(self, batch, batch_idx):
         loss, acc = self.common_test_valid_step(batch, batch_idx)

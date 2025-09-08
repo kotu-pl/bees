@@ -116,7 +116,7 @@ class GenericTimmLitModel(pl.LightningModule):
         self.val_map_micro.reset()
 
     def test_step(self, batch, batch_idx):
-        loss, acc = self.common_test_valid_step(batch, batch_idx)
+        loss, acc, _, _ = self.common_test_valid_step(batch, batch_idx)
         self.log('test_loss', loss, prog_bar=True)
         self.log('test_acc', acc, prog_bar=True)
         return loss

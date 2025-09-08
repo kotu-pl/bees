@@ -6,6 +6,7 @@ import torch.optim as optim
 import pytorch_lightning as pl
 import torchmetrics
 from torchmetrics.classification import MultilabelAveragePrecision
+from pytorch_lightning.loggers import WandbLogger
 
 class GenericTimmLitModel(pl.LightningModule):
     def __init__(self, model, learning_rate=1e-3, weight_decay=1e-4, freeze_backbone: bool = True, loss_fn: str = "bce"):

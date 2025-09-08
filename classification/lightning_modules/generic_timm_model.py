@@ -158,3 +158,9 @@ class GenericTimmLitModel(pl.LightningModule):
             self.register_buffer("pos_weight", pos_w.to(self.device))
         else:
             self.pos_weight = None
+
+        # definicja agregacji max w WandB
+        if isinstance(self.logger, WandbLogger):
+            exp = self.logger.experiment
+            exp.define_metric("val_map_macro", summary="max")
+            exp.define_metric("val_map_micro", summary="max")

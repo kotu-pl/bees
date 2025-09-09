@@ -5,6 +5,7 @@ model:
   model_name: swin${swin_transformer_version}
   pretrained: True
   num_classes: 5
+  features_only: False
 
 learning_rate: 1e-3
 weight_decay: 1e-4

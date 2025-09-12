@@ -17,7 +17,7 @@ class ResizePad224:
         pad_left  = (224 - new_w) // 2
         pad_top   = (224 - new_h) // 2
         pad_right = 224 - new_w - pad_left
-        pad_bot   = 224 - new_h - pad_top
+        pad_bottom = 224 - new_h - pad_top
 
         img = F.pad(
             img,

@@ -6,7 +6,7 @@ import torch.optim as optim
 import pytorch_lightning as pl
 import torchmetrics
 from torchmetrics.classification import (
-    MultilabelF1Score, MultilabelPrecision, MultilabelRecall, MultilabelAveragePrecision
+    MultilabelF1Score, MultilabelPrecision, MultilabelRecall, MultilabelAveragePrecision, MultilabelHammingDistance
 )
 from pytorch_lightning.loggers import WandbLogger
 
@@ -32,6 +32,7 @@ class GenericTimmLitModel(pl.LightningModule):
         self.val_f1 = MultilabelF1Score(num_labels=self.num_labels, average="macro", threshold=0.5)
         self.val_precision = MultilabelPrecision(num_labels=self.num_labels, average="macro", threshold=0.5)
         self.val_recall = MultilabelRecall(num_labels=self.num_labels, average="macro", threshold=0.5)
+        self.val_hamming = MultilabelHammingDistance(num_labels=self.num_labels, threshold=0.5)
 
         # zamrożenie modeli
         if freeze_backbone:
@@ -113,6 +114,7 @@ class GenericTimmLitModel(pl.LightningModule):
         self.val_f1.update(probs, y.int())
         self.val_precision.update(probs, y.int())
         self.val_recall.update(probs, y.int())
+        self.val_hamming.update(probs, y.int())
 
         self.log('val_loss', loss, prog_bar=True)
         self.log('val_acc', acc, prog_bar=True)
@@ -124,16 +126,19 @@ class GenericTimmLitModel(pl.LightningModule):
         f1 = self.val_f1.compute()
         prec = self.val_precision.compute()
         rec = self.val_recall.compute()
+        hl = self.val_hamming.compute()
 
         self.log("val_map", mean_ap, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
         self.log("val_f1", f1, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
         self.log("val_precision", prec, on_step=False, on_epoch=True, sync_dist=True)
         self.log("val_recall", rec, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_hamming", hl, on_step=False, on_epoch=True, sync_dist=True)
 
         self.val_map.reset()
         self.val_f1.reset()
         self.val_precision.reset()
         self.val_recall.reset()
+        self.val_hamming.reset()
 
     def test_step(self, batch, batch_idx):
         loss, acc, _, _ = self.common_test_valid_step(batch, batch_idx)
@@ -187,3 +192,4 @@ class GenericTimmLitModel(pl.LightningModule):
             exp.define_metric("val_f1", summary="max")
             exp.define_metric("val_precision", summary="max")
             exp.define_metric("val_recall", summary="max")
+            exp.define_metric("val_hamming", summary="min")

@@ -28,7 +28,7 @@ class GenericTimmLitModel(pl.LightningModule):
             self.num_labels = self.model.get_classifier().out_features
 
         # Inicjalizacja metryk mAP
-        self.val_map = MultilabelAveragePrecision(num_labels=self.num_labels, average="macro")
+        self.val_mean_ap = MultilabelAveragePrecision(num_labels=self.num_labels, average="macro")
         self.val_f1 = MultilabelF1Score(num_labels=self.num_labels, average="macro", threshold=0.5)
         self.val_precision = MultilabelPrecision(num_labels=self.num_labels, average="macro", threshold=0.5)
         self.val_recall = MultilabelRecall(num_labels=self.num_labels, average="macro", threshold=0.5)
@@ -110,7 +110,7 @@ class GenericTimmLitModel(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         loss, acc, probs, y = self.common_test_valid_step(batch, batch_idx)
-        self.val_map.update(probs, y.int())
+        self.val_mean_ap.update(probs, y.int())
         self.val_f1.update(probs, y.int())
         self.val_precision.update(probs, y.int())
         self.val_recall.update(probs, y.int())
@@ -122,19 +122,19 @@ class GenericTimmLitModel(pl.LightningModule):
 
     # obliczanie i logowanie metryk na końcu końcu epoki walidacyjnej
     def on_validation_epoch_end(self):
-        mean_ap = self.val_map.compute()
+        mean_ap = self.val_mean_ap.compute()
         f1 = self.val_f1.compute()
         prec = self.val_precision.compute()
         rec = self.val_recall.compute()
         hl = self.val_hamming.compute()
 
-        self.log("val_map", mean_ap, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_mean_ap", mean_ap, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
         self.log("val_f1", f1, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
         self.log("val_precision", prec, on_step=False, on_epoch=True, sync_dist=True)
         self.log("val_recall", rec, on_step=False, on_epoch=True, sync_dist=True)
         self.log("val_hamming", hl, on_step=False, on_epoch=True, sync_dist=True)
 
-        self.val_map.reset()
+        self.val_mean_ap.reset()
         self.val_f1.reset()
         self.val_precision.reset()
         self.val_recall.reset()
@@ -188,7 +188,7 @@ class GenericTimmLitModel(pl.LightningModule):
         # definicja agregacji max w WandB
         if isinstance(self.logger, WandbLogger):
             exp = self.logger.experiment
-            exp.define_metric("val_map", summary="max")
+            exp.define_metric("val_mean_ap", summary="max")
             exp.define_metric("val_f1", summary="max")
             exp.define_metric("val_precision", summary="max")
             exp.define_metric("val_recall", summary="max")

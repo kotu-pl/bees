@@ -28,10 +28,10 @@ class GenericTimmLitModel(pl.LightningModule):
             self.num_labels = self.model.get_classifier().out_features
 
         # Inicjalizacja metryk mAP
-        self.val_map_macro = MultilabelAveragePrecision(num_labels=self.num_labels, average="macro")
-        self.val_f1_macro = MultilabelF1Score(num_labels=self.num_labels, average="macro", threshold=0.5)
-        self.val_precision_macro = MultilabelPrecision(num_labels=self.num_labels, average="macro", threshold=0.5)
-        self.val_recall_macro = MultilabelRecall(num_labels=self.num_labels, average="macro", threshold=0.5)
+        self.val_map = MultilabelAveragePrecision(num_labels=self.num_labels, average="macro")
+        self.val_f1 = MultilabelF1Score(num_labels=self.num_labels, average="macro", threshold=0.5)
+        self.val_precision = MultilabelPrecision(num_labels=self.num_labels, average="macro", threshold=0.5)
+        self.val_recall = MultilabelRecall(num_labels=self.num_labels, average="macro", threshold=0.5)
 
         # zamrożenie modeli
         if freeze_backbone:
@@ -109,10 +109,10 @@ class GenericTimmLitModel(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         loss, acc, probs, y = self.common_test_valid_step(batch, batch_idx)
-        self.val_map_macro.update(probs, y.int())
-        self.val_f1_macro.update(probs, y.int())
-        self.val_precision_macro.update(probs, y.int())
-        self.val_recall_macro.update(probs, y.int())
+        self.val_map.update(probs, y.int())
+        self.val_f1.update(probs, y.int())
+        self.val_precision.update(probs, y.int())
+        self.val_recall.update(probs, y.int())
 
         self.log('val_loss', loss, prog_bar=True)
         self.log('val_acc', acc, prog_bar=True)
@@ -120,20 +120,20 @@ class GenericTimmLitModel(pl.LightningModule):
 
     # obliczanie i logowanie metryk na końcu końcu epoki walidacyjnej
     def on_validation_epoch_end(self):
-        map_macro = self.val_map_macro.compute()
-        f1_macro = self.val_f1_macro.compute()
-        prec_macro = self.val_precision_macro.compute()
-        rec_macro = self.val_recall_macro.compute()
+        mean_ap = self.val_map.compute()
+        f1 = self.val_f1.compute()
+        prec = self.val_precision.compute()
+        rec = self.val_recall.compute()
 
-        self.log("val_map_macro", map_macro, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
-        self.log("val_f1_macro", f1_macro, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
-        self.log("val_precision_macro", prec_macro, on_step=False, on_epoch=True, sync_dist=True)
-        self.log("val_recall_macro", rec_macro, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_map", mean_ap, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_f1", f1, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_precision", prec, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_recall", rec, on_step=False, on_epoch=True, sync_dist=True)
 
-        self.val_map_macro.reset()
-        self.val_f1_macro.reset()
-        self.val_precision_macro.reset()
-        self.val_recall_macro.reset()
+        self.val_map.reset()
+        self.val_f1.reset()
+        self.val_precision.reset()
+        self.val_recall.reset()
 
     def test_step(self, batch, batch_idx):
         loss, acc, _, _ = self.common_test_valid_step(batch, batch_idx)
@@ -183,7 +183,7 @@ class GenericTimmLitModel(pl.LightningModule):
         # definicja agregacji max w WandB
         if isinstance(self.logger, WandbLogger):
             exp = self.logger.experiment
-            exp.define_metric("val_map_macro", summary="max")
-            exp.define_metric("val_f1_macro", summary="max")
-            exp.define_metric("val_precision_macro", summary="max")
-            exp.define_metric("val_recall_macro", summary="max")
+            exp.define_metric("val_map", summary="max")
+            exp.define_metric("val_f1", summary="max")
+            exp.define_metric("val_precision", summary="max")
+            exp.define_metric("val_recall", summary="max")

@@ -5,7 +5,9 @@ import torch.optim as optim
 
 import pytorch_lightning as pl
 import torchmetrics
-from torchmetrics.classification import MultilabelAveragePrecision
+from torchmetrics.classification import (
+    MultilabelF1Score, MultilabelPrecision, MultilabelRecall, MultilabelAveragePrecision
+)
 from pytorch_lightning.loggers import WandbLogger
 
 class GenericTimmLitModel(pl.LightningModule):
@@ -27,6 +29,9 @@ class GenericTimmLitModel(pl.LightningModule):
 
         # Inicjalizacja metryk mAP
         self.val_map_macro = MultilabelAveragePrecision(num_labels=self.num_labels, average="macro")
+        self.val_f1_macro = MultilabelF1Score(num_labels=self.num_labels, average="macro", threshold=0.5)
+        self.val_precision_macro = MultilabelPrecision(num_labels=self.num_labels, average="macro", threshold=0.5)
+        self.val_recall_macro = MultilabelRecall(num_labels=self.num_labels, average="macro", threshold=0.5)
 
         # zamrożenie modeli
         if freeze_backbone:
@@ -105,6 +110,10 @@ class GenericTimmLitModel(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         loss, acc, probs, y = self.common_test_valid_step(batch, batch_idx)
         self.val_map_macro.update(probs, y.int())
+        self.val_f1_macro.update(probs, y.int())
+        self.val_precision_macro.update(probs, y.int())
+        self.val_recall_macro.update(probs, y.int())
+
         self.log('val_loss', loss, prog_bar=True)
         self.log('val_acc', acc, prog_bar=True)
         return loss
@@ -112,8 +121,19 @@ class GenericTimmLitModel(pl.LightningModule):
     # obliczanie i logowanie metryk na końcu końcu epoki walidacyjnej
     def on_validation_epoch_end(self):
         map_macro = self.val_map_macro.compute()
+        f1_macro = self.val_f1_macro.compute()
+        prec_macro = self.val_precision_macro.compute()
+        rec_macro = self.val_recall_macro.compute()
+
         self.log("val_map_macro", map_macro, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_f1_macro", f1_macro, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_precision_macro", prec_macro, on_step=False, on_epoch=True, sync_dist=True)
+        self.log("val_recall_macro", rec_macro, on_step=False, on_epoch=True, sync_dist=True)
+
         self.val_map_macro.reset()
+        self.val_f1_macro.reset()
+        self.val_precision_macro.reset()
+        self.val_recall_macro.reset()
 
     def test_step(self, batch, batch_idx):
         loss, acc, _, _ = self.common_test_valid_step(batch, batch_idx)
@@ -164,3 +184,6 @@ class GenericTimmLitModel(pl.LightningModule):
         if isinstance(self.logger, WandbLogger):
             exp = self.logger.experiment
             exp.define_metric("val_map_macro", summary="max")
+            exp.define_metric("val_f1_macro", summary="max")
+            exp.define_metric("val_precision_macro", summary="max")
+            exp.define_metric("val_recall_macro", summary="max")

@@ -34,7 +34,7 @@ class GenericTimmLitModel(pl.LightningModule):
             self.freeze_backbone()
 
         n_train = sum(p.numel() for p in self.parameters() if p.requires_grad)
-        self.print(f"[DEBUG] trainable at start: {n_train}")
+        print(f"[DEBUG] trainable at start: {n_train}")
 
         # Zakończenie sieci ogarnia `timm` w trakcie tworzenia modelu
         # self.adjust_fc_layer()

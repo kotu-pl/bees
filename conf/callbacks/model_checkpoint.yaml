@@ -1,6 +1,6 @@
 model_checkpoint:
   _target_: pytorch_lightning.callbacks.ModelCheckpoint
-  monitor: val_map_macro
+  monitor: val_map
   dirpath: ${logs_dir}/checkpoints
   filename: model-{epoch:02d}-{val_loss:.2f}
   mode: max

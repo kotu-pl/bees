@@ -1,6 +1,6 @@
 early_stopping:
   _target_: pytorch_lightning.callbacks.EarlyStopping
-  monitor: val_map_macro
+  monitor: val_map
   mode: max
   patience: 3
   min_delta: 0.005

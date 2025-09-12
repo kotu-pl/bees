@@ -9,13 +9,15 @@ from torchmetrics.classification import MultilabelAveragePrecision
 from pytorch_lightning.loggers import WandbLogger
 
 class GenericTimmLitModel(pl.LightningModule):
-    def __init__(self, model, learning_rate=1e-3, weight_decay=1e-4, freeze_backbone: bool = True, loss_fn: str = "bce"):
+    def __init__(self, model, learning_rate=1e-3, weight_decay=1e-4, freeze_backbone: bool = False, loss_fn: str = "bce"):
         super().__init__()
         self.save_hyperparameters(ignore=["model"])
         self.loss_fn = loss_fn.lower()
 
         self.model = model
-        self.backbone = model  # alias dla BackboneFinetuning
+        head_names = ("head", "classifier", "fc", "head.fc", "last_linear")
+        backbone_modules = [m for n, m in self.model.named_children() if n not in head_names]
+        self.backbone = nn.Sequential(*backbone_modules) if backbone_modules else self.model
         self.learning_rate = learning_rate
         self.weight_decay = weight_decay
 

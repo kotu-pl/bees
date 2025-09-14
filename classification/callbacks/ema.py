@@ -1,7 +1,7 @@
 import pytorch_lightning as pl
 from timm.utils import ModelEmaV2
 
-class EmaCallback(pl.Callback):
+class EMACallback(pl.Callback):
     def __init__(self, decay=0.9998):
         self.decay = decay
         self.ema = None

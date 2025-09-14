@@ -42,6 +42,8 @@ class GenericTimmLitModel(pl.LightningModule):
         self.val_recall = MultilabelRecall(num_labels=self.num_labels, average="macro", threshold=0.5)
         self.val_hamming = MultilabelHammingDistance(num_labels=self.num_labels, threshold=0.5)
 
+        self.decision_thresholds = None
+
         # zamrożenie modeli
         if freeze_backbone:
             self.freeze_backbone()
@@ -105,7 +107,13 @@ class GenericTimmLitModel(pl.LightningModule):
     def common_test_valid_step(self, batch, batch_idx, eval_mode: bool = False):
         loss, outputs, y = self.common_step(batch, batch_idx, eval_mode)
         probs = torch.sigmoid(outputs)
-        preds = (probs > 0.5).int()
+
+        thr = self.decision_thresholds
+        if thr is None:
+            preds = (probs > 0.5).int()
+        else:
+            preds = (probs > thr.to(probs.device)).int()
+
         acc = torchmetrics.functional.accuracy(
             preds, y.int(), task="multilabel", num_labels=outputs.size(1)
         )
@@ -127,7 +135,12 @@ class GenericTimmLitModel(pl.LightningModule):
 
         self.log('val_loss', loss, prog_bar=True)
         self.log('val_acc', acc, prog_bar=True)
-        return loss
+
+        return {
+            "val_loss": loss.detach(),
+            "probs":    probs.detach().float().cpu(),
+            "targets":  y.int().detach().cpu(),
+        }
 
     # obliczanie i logowanie metryk na końcu końcu epoki walidacyjnej
     def on_validation_epoch_end(self):
@@ -153,6 +166,8 @@ class GenericTimmLitModel(pl.LightningModule):
         loss, acc, _, _ = self.common_test_valid_step(batch, batch_idx, eval_mode=True)
         self.log('test_loss', loss, prog_bar=True)
         self.log('test_acc', acc, prog_bar=True)
+
+
         return loss
 
     def configure_optimizers(self):
@@ -184,7 +199,13 @@ class GenericTimmLitModel(pl.LightningModule):
         x, _ = batch
         logits = self(x)
         probs = torch.sigmoid(logits)
-        preds = (probs > 0.5).int()
+
+        thr = self.decision_thresholds
+        if thr is None:
+            preds = (probs > 0.5).int()
+        else:
+            preds = (probs > thr.to(probs.device)).int()
+
         return preds
 
     def _inference_logits(self, x: torch.Tensor) -> torch.Tensor:

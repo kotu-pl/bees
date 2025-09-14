@@ -6,3 +6,4 @@ callbacks:
   - ${callbacks.early_stopping}
   - ${callbacks.backbone_finetuning}
   - ${callbacks.ema}
+  - ${callbacks.threshold_finder}

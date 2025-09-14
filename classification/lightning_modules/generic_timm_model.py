@@ -178,7 +178,7 @@ class GenericTimmLitModel(pl.LightningModule):
         )
 
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode="min", factor=0.3, patience=1#, verbose=True
+            optimizer, mode="max", factor=0.5, patience=3, min_lr=1e-7
         )
 
         return {

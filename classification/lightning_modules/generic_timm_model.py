@@ -90,7 +90,7 @@ class GenericTimmLitModel(pl.LightningModule):
             return self.asl(x, y)
         elif self.loss_fn == "hinge":
             y_hinge = y * 2 - 1  # z {0,1} do {-1,1}
-            return F.multi_label_margin_loss(torch.sigmoid(x), y_hinge.long())
+            return F.multilabel_margin_loss(torch.sigmoid(x), y_hinge.long())
 
         else:
             raise ValueError(f"Nieznana funkcja straty: {self.loss_fn}")

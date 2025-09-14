@@ -186,7 +186,7 @@ class GenericTimmLitModel(pl.LightningModule):
             "lr_scheduler": {
                 "scheduler": scheduler,
                 "interval": "epoch",
-                "monitor": "val_loss",   # <-- kluczowe!
+                "monitor": "val_mean_ap",
             },
         }
 

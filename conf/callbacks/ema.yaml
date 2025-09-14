@@ -1,3 +1,4 @@
 ema:
   _target_: classification.callbacks.ema.EMACallback
   decay: 0.9999
+  device: null

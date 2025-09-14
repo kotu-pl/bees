@@ -26,3 +26,17 @@ class ResizePad224:
         )
 
         return img
+
+class ResizeCrop224:
+    def __call__(self, img):
+        w, h = img.size
+        scale = 224 / min(w, h)
+        new_w, new_h = int(w * scale), int(h * scale)
+        img = F.resize(img, (new_h, new_w), interpolation=T.InterpolationMode.BICUBIC, antialias=True)
+        if new_w > new_h:
+            left = (new_w - 224) // 2
+            img = F.crop(img, 0, left, 224, 224)
+        else:
+            top = (new_h - 224) // 2
+            img = F.crop(img, top, 0, 224, 224)
+        return img

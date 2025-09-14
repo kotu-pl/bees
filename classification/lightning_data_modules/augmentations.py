@@ -21,7 +21,7 @@ class AugmentationFactory:
     def build(self, train: bool = True):
         tf = []
         if self.resize_pad_224:
-            tf.append(ResizePad224())
+            tf.append(ResizeCrop224())
 
         if train:
             tf.extend(self._train_policy())

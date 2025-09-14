@@ -110,28 +110,30 @@ class GenericTimmLitModel(pl.LightningModule):
 
         thr = self.decision_thresholds
         if thr is None:
-            preds = (probs > 0.5).int()
+            preds = (probs > 0.28).int()
         else:
             preds = (probs > thr.to(probs.device)).int()
 
         acc = torchmetrics.functional.accuracy(
             preds, y.int(), task="multilabel", num_labels=outputs.size(1)
         )
-        return loss, acc, probs, y
+        return loss, acc, probs, preds, y
 
     def training_step(self, batch, batch_idx):
-        loss, acc, _, _ = self.common_test_valid_step(batch, batch_idx)
+        loss, acc, _, _, _ = self.common_test_valid_step(batch, batch_idx)
         self.log('train_loss', loss, on_step=True, on_epoch=True, logger=True)
         self.log('train_acc', acc, on_step=True, on_epoch=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, acc, probs, y = self.common_test_valid_step(batch, batch_idx, eval_mode=True)
+        loss, acc, probs, preds, y = self.common_test_valid_step(batch, batch_idx, eval_mode=True)
+
         self.val_mean_ap.update(probs, y.int())
-        self.val_f1.update(probs, y.int())
-        self.val_precision.update(probs, y.int())
-        self.val_recall.update(probs, y.int())
-        self.val_hamming.update(probs, y.int())
+
+        self.val_f1.update(preds, y.int())
+        self.val_precision.update(preds, y.int())
+        self.val_recall.update(preds, y.int())
+        self.val_hamming.update(preds, y.int())
 
         self.log('val_loss', loss, prog_bar=True)
         self.log('val_acc', acc, prog_bar=True)
@@ -163,10 +165,9 @@ class GenericTimmLitModel(pl.LightningModule):
         self.val_hamming.reset()
 
     def test_step(self, batch, batch_idx):
-        loss, acc, _, _ = self.common_test_valid_step(batch, batch_idx, eval_mode=True)
+        loss, acc, _, _, _ = self.common_test_valid_step(batch, batch_idx, eval_mode=True)
         self.log('test_loss', loss, prog_bar=True)
         self.log('test_acc', acc, prog_bar=True)
-
 
         return loss
 
@@ -202,7 +203,7 @@ class GenericTimmLitModel(pl.LightningModule):
 
         thr = self.decision_thresholds
         if thr is None:
-            preds = (probs > 0.5).int()
+            preds = (probs > 0.28).int()
         else:
             preds = (probs > thr.to(probs.device)).int()
 

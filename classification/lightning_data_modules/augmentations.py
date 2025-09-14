@@ -1,6 +1,6 @@
 from torchvision import transforms
 from torchvision.transforms import AutoAugment, AutoAugmentPolicy, RandAugment, InterpolationMode, ToTensor, Normalize
-from .transforms_utils import ResizePad224
+from .transforms_utils import ResizePad224, ResizeCrop224
 
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD  = [0.229, 0.224, 0.225]

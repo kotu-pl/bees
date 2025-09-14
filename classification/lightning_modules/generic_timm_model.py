@@ -15,11 +15,12 @@ except Exception:
     from timm.loss.asymmetric_loss import AsymmetricLossMultiLabel
 
 class GenericTimmLitModel(pl.LightningModule):
-    def __init__(self, model, learning_rate=1e-3, weight_decay=1e-4, freeze_backbone: bool = False, loss_fn: str = "bce"):
+    def __init__(self, model, learning_rate=1e-3, weight_decay=1e-4, freeze_backbone: bool = False, loss_fn: str = "bce", eval_tta: bool = False):
         super().__init__()
         self.save_hyperparameters(ignore=["model"])
         self.loss_fn = loss_fn.lower()
         self.asl = None
+        self.eval_tta = eval_tta
         if self.loss_fn == "asl":
             self.asl = AsymmetricLossMultiLabel(gamma_neg=2.0, gamma_pos=0.0, clip=0.05, eps=1e-8)
 
@@ -95,14 +96,14 @@ class GenericTimmLitModel(pl.LightningModule):
         else:
             raise ValueError(f"Nieznana funkcja straty: {self.loss_fn}")
 
-    def common_step(self, batch, batch_idx):
+    def common_step(self, batch, batch_idx, eval_mode: bool = False):
         x, y = batch
-        outputs = self(x)
+        outputs = self._inference_logits(x) if eval_mode and self.eval_tta else self(x)
         loss = self.compute_loss(outputs, y)
         return loss, outputs, y
 
-    def common_test_valid_step(self, batch, batch_idx):
-        loss, outputs, y = self.common_step(batch, batch_idx)
+    def common_test_valid_step(self, batch, batch_idx, eval_mode: bool = False):
+        loss, outputs, y = self.common_step(batch, batch_idx, eval_mode)
         probs = torch.sigmoid(outputs)
         preds = (probs > 0.5).int()
         acc = torchmetrics.functional.accuracy(
@@ -117,7 +118,7 @@ class GenericTimmLitModel(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, acc, probs, y = self.common_test_valid_step(batch, batch_idx)
+        loss, acc, probs, y = self.common_test_valid_step(batch, batch_idx, eval_mode=True)
         self.val_mean_ap.update(probs, y.int())
         self.val_f1.update(probs, y.int())
         self.val_precision.update(probs, y.int())
@@ -149,7 +150,7 @@ class GenericTimmLitModel(pl.LightningModule):
         self.val_hamming.reset()
 
     def test_step(self, batch, batch_idx):
-        loss, acc, _, _ = self.common_test_valid_step(batch, batch_idx)
+        loss, acc, _, _ = self.common_test_valid_step(batch, batch_idx, eval_mode=True)
         self.log('test_loss', loss, prog_bar=True)
         self.log('test_acc', acc, prog_bar=True)
         return loss
@@ -185,6 +186,9 @@ class GenericTimmLitModel(pl.LightningModule):
         probs = torch.sigmoid(logits)
         preds = (probs > 0.5).int()
         return preds
+
+    def _inference_logits(self, x: torch.Tensor) -> torch.Tensor:
+        return (self.model(x) + self.model(torch.flip(x, dims=[-1]))) / 2
 
     def on_fit_start(self):
         pos_w = getattr(self.trainer.datamodule, "pos_weight", None)

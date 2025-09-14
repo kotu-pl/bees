@@ -9,12 +9,19 @@ from torchmetrics.classification import (
     MultilabelF1Score, MultilabelPrecision, MultilabelRecall, MultilabelAveragePrecision, MultilabelHammingDistance
 )
 from pytorch_lightning.loggers import WandbLogger
+try:
+    from timm.loss import AsymmetricLossMultiLabel
+except Exception:
+    from timm.loss.asymmetric_loss import AsymmetricLossMultiLabel
 
 class GenericTimmLitModel(pl.LightningModule):
     def __init__(self, model, learning_rate=1e-3, weight_decay=1e-4, freeze_backbone: bool = False, loss_fn: str = "bce"):
         super().__init__()
         self.save_hyperparameters(ignore=["model"])
         self.loss_fn = loss_fn.lower()
+        self.asl = None
+        if self.loss_fn == "asl":
+            self.asl = AsymmetricLossMultiLabel(gamma_neg=2.0, gamma_pos=0.0, clip=0.05, eps=1e-8)
 
         self.model = model
         head_names = ("head", "classifier", "fc", "head.fc", "last_linear")
@@ -79,7 +86,8 @@ class GenericTimmLitModel(pl.LightningModule):
             pt = torch.exp(-bce)
             focal = alpha * (1 - pt) ** gamma * bce
             return focal.mean()
-
+        elif self.loss_fn == 'asl':
+            return self.asl(x, y)
         elif self.loss_fn == "hinge":
             y_hinge = y * 2 - 1  # z {0,1} do {-1,1}
             return F.multi_label_margin_loss(torch.sigmoid(x), y_hinge.long())

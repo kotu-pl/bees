@@ -5,3 +5,4 @@ callbacks:
   - ${callbacks.model_checkpoint}
   - ${callbacks.early_stopping}
   - ${callbacks.backbone_finetuning}
+  - ${callbacks.ema}

@@ -19,6 +19,7 @@ defaults:
     - model_checkpoint
     - early_stopping
     - backbone_finetuning
+    - ema
 
 resnet_version: 34
 densenet_version: 121

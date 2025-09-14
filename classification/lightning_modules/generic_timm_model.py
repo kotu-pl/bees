@@ -22,7 +22,7 @@ class GenericTimmLitModel(pl.LightningModule):
         self.asl = None
         self.eval_tta = eval_tta
         if self.loss_fn == "asl":
-            self.asl = AsymmetricLossMultiLabel(gamma_neg=2.0, gamma_pos=0.0, clip=0.05, eps=1e-8)
+            self.asl = AsymmetricLossMultiLabel(gamma_neg=1.0, gamma_pos=0.0, clip=0.05, eps=1e-8)
 
         self.model = model
         head_names = ("head", "classifier", "fc", "head.fc", "last_linear")

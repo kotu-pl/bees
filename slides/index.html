@@ -208,16 +208,31 @@
           <section>
             <h2>Etap III (dostrajanie pełne)</h2>
             <ul>
-              <li></li>
-              <li></li>
-              <li></li>
-              <li></li>
+              <li>W trzecim etapie przeprowadzono pełne dostrajanie wyłonionego w Etapie II modelu ConvNeXt–Tiny.</li>
+              <li>Celem tej fazy było maksymalne wykorzystanie potencjału architektury poprzez stopniowe odmrażanie i aktualizację wag całego backbonu</li>
+              <li>Zaplanowano jako wielokrokowy proces (3 wewnętrzne iteracje, 184 przebiegów)</li>
+              <li>Dopuszczone zmiany w kodzie i dowolne modyfikacje parametrów treningu</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Etap III (c.d.)</h2>
+            Zmiany o obrębie 3 iteracji objmowały:
+            <ul>
+              <li>Poziom augmentacji (low, medium, auto)</li>
+              <li>Moment odmrożenia backbonu</li>
+              <li>Tempo uczenia backbonu po odmrożeniu</li>
+              <li>Strategie radzenia sobie z niezbalansowaniem</li>
+              <li>Typ harmonogramu LR (plateau/cosine)</li>
+              <li>Zmianę ustawienia early stopping</li>
+              <li>Eksperymentalne zmiany w kodzie: ASL jako funkcja straty, ResizeCrop224, próby z TTA/EMA</li>
             </ul>
           </section>
 
           <section>
             <h2>Etap III - wyniki</h2>
-            <img src="images/wyniki_etap.png" />
+
+            <img src="images/wyniki_etap3.png" />
           </section>
 
           <section>

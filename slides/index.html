@@ -177,8 +177,8 @@
             <ul>
               <li>Celem było wyłonienie architektur najbardziej rokujących pod kątem późniejszej optymalizacji</li>
               <li>Zapewniono możliwie jednakowe warunki, tak aby nie faworyzować żadnej architektury</li>
-              <li>Uczenie wyłącznie warstwy liniowej przy zamrożonym backbone, co izoluje jakość już wyuczonych cech i skraca czas.</li>
-              <li>Umiarkowane równoważenie klas (stratification, loss_weights)</li>
+              <li>Uczenie wyłącznie warstwy liniowej przy zamrożonym backbone, co izoluje jakość już wyuczonych cech i skraca czas treningu</li>
+              <li>Umiarkowane równoważenie klas<br />(stratification, loss_weights)</li>
               <li>Brak augmentacji</li>
             </ul>
           </section>
@@ -194,8 +194,8 @@
             <ul>
               <li>Celem drugiego etapu było rozstrzygnięcie wyboru między dwiema najlepiej rokującymi architekturami z etapu I (<b>ConvNeXt-Tiny</b> oraz <b>DeiT-Small</b>)</li>
               <li>Lekki fine-tuning przy zachowaniu umiarkowanego kosztu obliczeniowego i bez agresywnego strojenia.</li>
-              <li>Backbone wstępnie zamrożony, odmrożenie po 5-tej epoce</li>
-              <li><code>data.augmentation=low</code> czyli umiarkowana augmentacja danych</li>
+              <li>Backbone wstępnie zamrożony,<br />odmrożenie po 5-tej epoce</li>
+              <li><code>data.augmentation=low</code><br />czyli umiarkowana augmentacja danych</li>
             </ul>
           </section>
 
@@ -209,15 +209,15 @@
             <h2>Etap III (dostrajanie pełne)</h2>
             <ul>
               <li>W trzecim etapie przeprowadzono pełne dostrajanie wyłonionego w Etapie II modelu ConvNeXt–Tiny.</li>
-              <li>Celem tej fazy było maksymalne wykorzystanie potencjału architektury poprzez stopniowe odmrażanie i aktualizację wag całego backbonu</li>
-              <li>Zaplanowano jako wielokrokowy proces (3 wewnętrzne iteracje, 184 przebiegów)</li>
+              <li>Zaplanowano jako wielokrokowy proces<br />(3 wewnętrzne iteracje, 184 przebiegów)</li>
+              <li>Celem tej fazy było maksymalne wykorzystanie potencjału architektury</li>
               <li>Dopuszczone zmiany w kodzie i dowolne modyfikacje parametrów treningu</li>
             </ul>
           </section>
 
           <section>
             <h2>Etap III (c.d.)</h2>
-            Zmiany o obrębie 3 iteracji objmowały:
+            <h4>Charakterystyka zmian w obrębie 3 iteracji</h4>
             <ul>
               <li>Poziom augmentacji (low, medium, auto)</li>
               <li>Moment odmrożenia backbonu</li>

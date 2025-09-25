@@ -131,6 +131,27 @@
           </section>
 
           <section>
+            <h2>Normalizacja danych treningowych</h2>
+            <ul>
+              <li>Dopasowanie rozmiaru i proporcji (<code>ResizePad224</code>)
+                  <ul>
+                    <li>Skalowanie do 224px z zachowaniem proporcji</li>
+                    <li>Uzupełnienie paddingiem do 224px</li>
+                    <li>Padding ma kolor zbliżony do średnich wartości ImageNet</li>
+                  </ul>
+              </li>
+              <li>Augmentacje (auto/low/medium/high)
+                <ul>
+                  <li>AutoAugment, transformacje zoptymalizowane dla ImageNet</li>
+                  <li>RandAugment z różną intensywnością</li>
+                </ul>
+              </li>
+              <li>Konwersja do tensora</li>
+              <li>Normalizacja do rozkładu ImageNet</li>
+            </ul>
+          </section>
+
+          <section>
             <h2>Zaimplementowane funkcje strat</h2>
             <ul>
               <li>Binary Cross-Entropy</li>
